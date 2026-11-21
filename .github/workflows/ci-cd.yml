@@ -1,0 +1,59 @@
+name: CI-CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-build-push-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Ejecutar tests y cobertura
+        run: pytest tests/unit/ -v --cov=src --cov-report=term-missing
+
+      - name: Login a GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build y push a GHCR
+        if: github.event_name == 'push'
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/asistente-recordatorios:${{ github.sha }}
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy y smoke test
+        if: github.event_name == 'push'
+        run: |
+          docker run --rm -d --name asistente-recordatorios -p 8000:8000 \
+            ghcr.io/${{ github.repository_owner }}/asistente-recordatorios:${{ github.sha }}
+          for i in 1 2 3 4 5; do
+            curl --fail http://127.0.0.1:8000/salud && break
+            sleep 2
+          done
+          curl --fail http://127.0.0.1:8000/salud
+          docker stop asistente-recordatorios
