@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date as Date, datetime
 
 from .exceptions import (
     DatabaseError,
@@ -32,7 +32,7 @@ class ReminderService:
             raise ReminderPersistenceError("No pudo guardarse el recordatorio.") from exc
 
     def list_reminders_by_date(self, date):
-        if not isinstance(date, datetime):
+        if not isinstance(date, (datetime, Date)):
             raise InvalidReminderError("La fecha de consulta no es valida.")
         try:
             reminders = self.repository.find_by_date(date)

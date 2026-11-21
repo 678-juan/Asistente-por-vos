@@ -2,6 +2,11 @@ from .exceptions import NotificationError
 from .models import NOTIFIED
 
 
+class Notifier:
+    def notify(self, reminder):
+        raise NotificationError("El notificador no esta configurado.")
+
+
 class ReminderScheduler:
     def __init__(self, repository, notifier):
         self.repository = repository
@@ -16,8 +21,8 @@ class ReminderScheduler:
             if reminder.scheduled_at > now:
                 continue
             try:
-                self.notifier(reminder)
-            except Exception as exc:
+                self.notifier.notify(reminder)
+            except (NotificationError, Exception):
                 continue
             try:
                 self.repository.update_status(reminder.id, NOTIFIED)

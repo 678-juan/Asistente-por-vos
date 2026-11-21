@@ -28,13 +28,19 @@ class CommandInterpreter:
 
         normalized = re.sub(r"\s+", " ", str(text).strip().lower())
 
-        if any(word in normalized for word in ("listar", "consulta", "mostrar", "que tengo")):
+        if any(word in normalized for word in (
+            "listar", "consulta", "mostrar", "que tengo",
+            "qué recordatorios", "que recordatorios", "recordatorios tengo",
+        )):
             date = self._parse_date(normalized, now)
             if date is None:
                 raise IncompleteCommandError(["fecha"])
             return ParsedCommand(QUERY_REMINDERS, query_date=date)
 
-        if not any(word in normalized for word in ("recordar", "recordatorio", "crear", "agendar")):
+        if not any(word in normalized for word in (
+            "recordar", "recuérdame", "recuerdame", "recuerda",
+            "recordatorio", "crear", "agendar",
+        )):
             raise UnsupportedIntentError("Intencion no soportada.")
 
         missing = []
@@ -46,7 +52,7 @@ class CommandInterpreter:
         if date is None:
             missing.append("fecha")
         if time is None:
-            missing.append("hora")
+            missing.append("time")
         if missing:
             raise IncompleteCommandError(missing)
 
@@ -60,7 +66,7 @@ class CommandInterpreter:
 
     def _extract_event(self, text):
         patterns = (
-            r"(?:recordar(?:me)?|recordatorio|crear|agendar)\s+(?:que\s+)?(.+?)(?=\s+(?:hoy|mañana|ayer|el\s+\d{1,2}|a las?|las?)\b|$)",
+            r"(?:recuérdame|recuerdame|recuerda|recordar(?:me)?|recordatorio|crear|agendar)\s+(?:que\s+)?(.+?)(?=\s+(?:hoy|mañana|ayer|el\s+\d{1,2}|a las?|las?)\b|$)",
         )
         match = re.search(patterns[0], text)
         if not match:
@@ -71,7 +77,7 @@ class CommandInterpreter:
     def _parse_date(self, text, now):
         if "ayer" in text:
             return (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-        if "mañana" in text:
+        if "mañana" in text and "de la mañana" not in text:
             return (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
         if "hoy" in text:
             return now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -108,6 +114,9 @@ class CommandInterpreter:
                     hour += 12
                 elif suffix == "am" and hour == 12:
                     hour = 0
+                elif "de la tarde" in text or "de la noche" in text:
+                    if hour < 12:
+                        hour += 12
                 if hour > 23 or minute > 59:
                     return None
                 return datetime(2000, 1, 1, hour, minute)
