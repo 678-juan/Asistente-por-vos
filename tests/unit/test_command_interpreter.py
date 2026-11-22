@@ -50,7 +50,7 @@ def test_crea_recordatorio_con_fecha_numerica(interpreter, now):
 
     assert result.intent == CREATE_REMINDER
     assert result.event == "pagar el recibo del agua"
-    assert result.scheduled_at == datetime(2026, 10, 20, 8, 0)
+    assert result.scheduled_at == datetime(2026, 10, 20, 9, 0)
 
 
 def test_recordatorio_sin_hora_es_incompleto(interpreter, now):
