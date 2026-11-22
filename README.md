@@ -54,7 +54,7 @@ Invoke-RestMethod http://127.0.0.1:8000/salud
 ## Ejecutar las pruebas unitarias
 
 ```powershell
-pytest tests/unit/ -v
+python -m pytest tests/unit/ -v
 ```
 
 El proyecto contiene 22 casos unitarios PU-01 a PU-04. Si una prueba falla,

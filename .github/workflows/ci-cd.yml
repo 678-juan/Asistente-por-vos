@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Ejecutar pruebas unitarias
-        run: pytest tests/unit/ -v
+        run: python -m pytest tests/unit/ -v
 
   docker-build-push:
     name: Docker Build & Push
