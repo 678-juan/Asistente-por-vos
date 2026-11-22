@@ -102,4 +102,4 @@ Actions con **Read and write permissions**:
 1. Abre **Settings** del repositorio en GitHub.
 2. Entra a **Actions** y luego **General**.
 3. En **Workflow permissions**, selecciona **Read and write permissions**.
-4. Guarda los cambios.
+4. Guarda los cambios..
